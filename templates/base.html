@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Legal & Civic Assistant – {% block title %}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="{{ url_for('static', filename='css/style.css') }}"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    {% if current_user.is_authenticated %}
+    <div class="d-flex" id="wrapper">
+      <!-- SIDEBAR -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <i class="bi bi-shield-shaded me-2"></i>
+          <div>
+            <div class="brand-name">Legal & Civic</div>
+            <div class="brand-sub">Service Assistant</div>
+          </div>
+        </div>
+
+        <a
+          href="{{ url_for('dashboard.home') }}"
+          class="nav-link-item {% if request.endpoint=='dashboard.home' %}active{% endif %}"
+        >
+          <i class="bi bi-grid-1x2-fill"></i> {{ t('dashboard') }}
+        </a>
+        <a
+          href="{{ url_for('chatbot.chat_page') }}"
+          class="nav-link-item {% if 'chatbot' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-robot"></i> {{ t('ai_chat') }}
+        </a>
+        <a
+          href="{{ url_for('services.list_services') }}"
+          class="nav-link-item {% if 'services' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-bank2"></i> {{ t('gov_services') }}
+        </a>
+        <a
+          href="{{ url_for('checklist.checklist_page') }}"
+          class="nav-link-item {% if 'checklist' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-clipboard-check-fill"></i> {{ t('doc_checklist') }}
+        </a>
+
+        <div class="sidebar-section mt-2">{{ t('tools') }}</div>
+        <a
+          href="{{ url_for('tools.eligibility_checker') }}"
+          class="nav-link-item {% if 'eligibility' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-patch-check-fill"></i> {{ t('eligibility_checker') }}
+        </a>
+        <a
+          href="{{ url_for('tools.service_finder') }}"
+          class="nav-link-item {% if 'service_finder' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-search-heart"></i> {{ t('service_finder') }}
+        </a>
+        <a
+          href="{{ url_for('applications.my_applications') }}"
+          class="nav-link-item {% if 'applications' in request.endpoint %}active{% endif %}">
+          <i class="bi bi-folder-fill"></i> {{ t('my_applications') }}
+        </a>
+
+        <a
+          href="{{ url_for('profile.my_profile') }}"
+          class="nav-link-item {% if 'profile' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-person-fill"></i> {{ t('my_profile') }}
+        </a>
+
+        {% if current_user.role == 'admin' %}
+        <div class="sidebar-section mt-2">ADMIN PANEL</div>
+        <a
+          href="{{ url_for('admin.admin_dashboard') }}"
+          class="nav-link-item {% if request.endpoint=='admin.admin_dashboard' %}active{% endif %}"
+        >
+          <i class="bi bi-speedometer2"></i> {{ t('admin_dashboard') }}
+        </a>
+        <a
+          href="{{ url_for('admin.manage_services') }}"
+          class="nav-link-item {% if request.endpoint in ['admin.manage_services','admin.add_service','admin.edit_service'] %}active{% endif %}"
+        >
+          <i class="bi bi-gear-fill"></i> {{ t('manage_services') }}
+        </a>
+        <a
+          href="{{ url_for('admin.manage_users') }}"
+          class="nav-link-item {% if 'manage_users' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-people-fill"></i> {{ t('manage_users') }}
+        </a>
+        <a
+          href="{{ url_for('admin.manage_links') }}"
+          class="nav-link-item {% if 'manage_links' in request.endpoint %}active{% endif %}"
+        >
+          <i class="bi bi-link-45deg"></i> {{ t('official_links') }}
+        </a>
+        {% endif %}
+
+        <a
+          href="{{ url_for('auth.logout') }}"
+          class="nav-link-item text-danger mt-auto"
+        >
+          <i class="bi bi-box-arrow-left"></i> {{ t('logout') }}
+        </a>
+      </div>
+
+      <!-- MAIN -->
+      <div id="page-content-wrapper">
+        <nav class="topbar navbar navbar-expand-lg">
+          <div class="container-fluid px-4">
+            <button
+              class="btn btn-sm btn-outline-secondary me-3"
+              id="sidebarToggle"
+            >
+              <i class="bi bi-list"></i>
+            </button>
+            <span class="topbar-title"
+              >{% block page_title %}{% endblock %}</span
+            >
+            <div class="ms-auto d-flex align-items-center gap-3">
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                >
+                  <i class="bi bi-globe2 me-1"></i>{{ current_language }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{{ url_for('set_language', lang='English') }}"
+                      >🇬🇧 English</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{{ url_for('set_language', lang='Tamil') }}"
+                      >🇮🇳 தமிழ்</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item"
+                      href="{{ url_for('set_language', lang='Sinhala') }}"
+                      >🇱🇰 සිංහල</a
+                    >
+                  </li>
+                </ul>
+              </div>
+              <span class="user-badge"
+                ><i class="bi bi-person-circle me-1"></i>{{
+                current_user.fullname }}</span
+              >
+            </div>
+          </div>
+        </nav>
+
+        <div class="main-content p-4">
+          {% with messages = get_flashed_messages(with_categories=true) %} {% if
+          messages %} {% for cat, msg in messages %}
+          <div
+            class="alert alert-{{ cat }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ msg }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
+          </div>
+          {% endfor %} {% endif %} {% endwith %} {% block content %}{% endblock
+          %}
+        </div>
+      </div>
+    </div>
+    {% else %} {% block public_content %}{% endblock %} {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

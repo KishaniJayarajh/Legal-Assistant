@@ -1,0 +1,562 @@
+{% extends 'base.html' %}
+{% block title %}Form Assistant{% endblock %}
+{% block page_title %}Form Assistant — {{ service.name }}{% endblock %}
+{% block content %}
+
+<div class="card-custom">
+  <div class="card-header">
+    <span>{{ service.icon }} Form Assistant — {{ service.name }}</span>
+    <span class="badge" style="background:#ecfdf5;color:#065f46;">
+      ✅ Auto-fills your profile data
+    </span>
+  </div>
+  <div class="card-body">
+    <div class="row g-4">
+
+      <!-- STEP SIDEBAR -->
+      <div class="col-md-2">
+        <div class="wizard-steps">
+          {% for step in [('1','Personal'),('2','Contact'),('3','Documents'),('4','Review')] %}
+          <div class="wizard-step {% if loop.first %}active{% endif %}"
+               id="step-tab-{{ step[0] }}">
+            <span class="wizard-step-num">{{ step[0] }}</span>
+            {{ step[1] }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- FORM AREA -->
+      <div class="col-md-6">
+
+        <!-- STEP 1: Personal Details -->
+        <div id="form-step-1">
+          <h6 class="fw-700 mb-3">Personal Details</h6>
+          {% for f in fields %}
+          <div class="form-group mb-3">
+            <label class="form-label">{{ f.label }}</label>
+            {% if f.type == 'select' %}
+            <select class="form-select" id="field_{{ f.key }}"
+                    onchange="updatePreview()">
+              {% for opt in f.options %}
+              <option>{{ opt }}</option>
+              {% endfor %}
+            </select>
+            {% elif f.type == 'date' %}
+            <input type="date" class="form-input"
+                   id="field_{{ f.key }}"
+                   onchange="updatePreview()"/>
+            {% else %}
+            <input type="text" class="form-input"
+                   id="field_{{ f.key }}"
+                   value="{{ prefill.get(f.key, '') }}"
+                   oninput="updatePreview()"/>
+            {% if f.key == 'nic_number' and service.name == 'NIC Application' %}
+            <small class="text-muted d-block mt-1" style="font-size:12px;">
+              {{ t('nic_form_hint') }}
+            </small>
+            {% endif %}
+            {% endif %}
+          </div>
+          {% endfor %}
+
+          <!-- District Selector -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-700">
+              📍 Select Your District
+            </label>
+            <select class="form-select" id="field_district"
+                    onchange="updatePreview()">
+              <option value="">-- Select District --</option>
+              {% for d in districts %}
+              <option>{{ d }}</option>
+              {% endfor %}
+            </select>
+            <small class="text-muted">
+              We will find the nearest office for you
+            </small>
+          </div>
+
+          <!-- Purpose -->
+          <div class="form-group mb-3">
+            <label class="form-label fw-700">Purpose</label>
+            <select class="form-select" id="field_purpose"
+                    onchange="updatePreview()">
+              {% if service.name == 'Police Clearance' %}
+              <option>Job Abroad</option>
+              <option>Visa Application</option>
+              <option>Employment</option>
+              <option>Migration</option>
+              <option>Other</option>
+              {% elif service.name == 'Passport Application' %}
+              <option>Foreign Travel</option>
+              <option>Business</option>
+              <option>Education</option>
+              <option>Other</option>
+              {% else %}
+              <option>Personal Use</option>
+              <option>Official Purpose</option>
+              <option>Other</option>
+              {% endif %}
+            </select>
+          </div>
+
+          <button class="btn"
+                  style="background:var(--primary);color:#fff;"
+                  onclick="goStep(2)">
+            Next → Contact Details
+          </button>
+        </div>
+
+        <!-- STEP 2: Contact Details -->
+        <div id="form-step-2" class="d-none">
+          <h6 class="fw-700 mb-3">Contact Details</h6>
+          <div class="form-group mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input"
+                   id="field_email"
+                   value="{{ current_user.email }}"
+                   oninput="updatePreview()"/>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Mobile Number</label>
+            <input type="tel" class="form-input"
+                   id="field_mobile"
+                   value="{{ current_user.mobile or '' }}"
+                   oninput="updatePreview()"/>
+          </div>
+          <div class="form-group mb-3">
+            <label class="form-label">Home Address</label>
+            <input type="text" class="form-input"
+                   id="field_address"
+                   oninput="updatePreview()"/>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary"
+                    onclick="goStep(1)">← Back</button>
+            <button class="btn"
+                    style="background:var(--primary);color:#fff;"
+                    onclick="goStep(3)">Next → Documents</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Document Checklist -->
+        <div id="form-step-3" class="d-none">
+          <h6 class="fw-700 mb-3">Required Documents</h6>
+          <div class="p-3 mb-3"
+               style="background:#f0fdf4;border:1px solid #bbf7d0;
+                      border-radius:12px;">
+            <p class="fw-700 mb-2"
+               style="color:#065f46;">
+              📋 Bring these to the office:
+            </p>
+            {% for doc in service.documents %}
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox"
+                     id="doc{{ loop.index }}" checked/>
+              <label class="form-check-label"
+                     for="doc{{ loop.index }}"
+                     style="font-size:14px;">
+                {{ doc.document_name }}
+                {% if doc.is_mandatory %}
+                <span class="badge-mandatory ms-1">Required</span>
+                {% else %}
+                <span class="badge-optional ms-1">Optional</span>
+                {% endif %}
+              </label>
+            </div>
+            {% endfor %}
+            <!-- Always add the filled PDF reminder -->
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" checked/>
+              <label class="form-check-label" style="font-size:14px;">
+                📄 This Filled Application PDF
+                <span class="badge-mandatory ms-1">Required</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3"
+               style="background:#fff7ed;border:1px solid #fed7aa;
+                      border-radius:12px;">
+            <div style="font-size:13px;color:#92400e;">
+              <strong>⏱ Estimated Processing Time:</strong><br/>
+              {% if service.name == 'Police Clearance' %}
+              3–5 working days
+              {% elif service.name == 'Passport Application' %}
+              10–14 working days
+              {% elif service.name == 'NIC Application' %}
+              14–21 working days
+              {% elif service.name == 'Driving License' %}
+              7–10 working days
+              {% else %}
+              5–7 working days
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-secondary"
+                    onclick="goStep(2)">← Back</button>
+            <button class="btn"
+                    style="background:var(--primary);color:#fff;"
+                    onclick="goStep(4)">Review & Submit →</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Review & Submit -->
+        <div id="form-step-4" class="d-none">
+          <h6 class="fw-700 mb-3">Review Your Application</h6>
+          <div id="reviewSummary" class="form-preview-box mb-4"></div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary"
+                    onclick="goStep(3)">← Back</button>
+            <button class="btn"
+                    id="submitBtn"
+                    style="background:#16a34a;color:#fff;"
+                    onclick="submitApplication()">
+              ✅ Generate Form & Find Office
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- LIVE PREVIEW -->
+      <div class="col-md-4">
+        <div style="position:sticky;top:80px;">
+          <h6 class="fw-700 mb-2">📋 Live Preview</h6>
+          <div class="form-preview-box" id="previewBox">
+            <div class="text-center mb-3">
+              <div style="width:52px;height:52px;border-radius:50%;
+                          background:#e2e8f0;margin:0 auto;
+                          display:flex;align-items:center;
+                          justify-content:center;font-size:22px;">
+                {{ service.icon }}
+              </div>
+              <div style="font-size:12px;color:var(--muted);
+                          margin-top:6px;">
+                {{ service.name }}
+              </div>
+            </div>
+            <div id="previewFields">
+              <p class="text-muted text-center"
+                 style="font-size:13px;">
+                Fill the form to see preview
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── RESULT SECTION ───────────────────────────── -->
+<div id="resultSection" class="d-none mt-4">
+
+  <!-- Success Header -->
+  <div class="card-custom mb-4"
+       style="background:linear-gradient(135deg,#16a34a,#15803d);
+              color:#fff;border:none;">
+    <div class="card-body d-flex align-items-center gap-3">
+      <div style="font-size:48px;">✅</div>
+      <div>
+        <h4 class="fw-800 mb-1">Your Application is Ready!</h4>
+        <p class="mb-0 opacity-85" id="resultAppNo"></p>
+      </div>
+      <div class="ms-auto">
+        <a id="downloadPdfBtn" href="#" target="_blank"
+           class="btn"
+           style="background:#fff;color:#16a34a;font-weight:700;">
+          📄 Download Filled PDF
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Left: Office Info -->
+    <div class="col-lg-6">
+      <div class="card-custom">
+        <div class="card-header">
+          📍 Submit at this Office
+        </div>
+        <div class="card-body" id="officeInfo">
+          <div class="text-center text-muted py-3">
+            Loading nearest office...
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="card-custom mt-3">
+        <div class="card-header">📋 Documents to Carry</div>
+        <div class="card-body">
+          {% for doc in service.documents %}
+          <div class="d-flex align-items-center gap-2 py-2
+                      border-bottom">
+            <span style="color:#16a34a;">☑</span>
+            <span style="font-size:14px;">
+              {{ doc.document_name }}
+            </span>
+          </div>
+          {% endfor %}
+          <div class="d-flex align-items-center gap-2 py-2">
+            <span style="color:#16a34a;">☑</span>
+            <span style="font-size:14px;font-weight:700;">
+              This Filled PDF (Downloaded above)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Live Preview of filled data -->
+    <div class="col-lg-6">
+      <div class="card-custom">
+        <div class="card-header">📝 Your Filled Application</div>
+        <div class="card-body" id="resultPreview"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const FIELDS    = {{ fields|tojson|safe }};
+const SERVICE   = "{{ service.name }}";
+const SERVICE_ID = {{ service.id }};
+const I18N = {
+  no_office_found_error:   {{ t('no_office_found_error')|tojson|safe }},
+  no_office_in_district_note: {{ t('no_office_in_district_note')|tojson|safe }},
+  approx_km_away:          {{ t('approx_km_away')|tojson|safe }},
+  approx_km_from:          {{ t('approx_km_from')|tojson|safe }},
+  get_directions:          {{ t('get_directions')|tojson|safe }},
+  could_not_find_office:   {{ t('could_not_find_office')|tojson|safe }}
+};
+let currentStep = 1;
+let appId = null;
+
+// ── STEP NAVIGATION ────────────────────────────────
+function goStep(n) {
+  document.getElementById('form-step-' + currentStep)
+          .classList.add('d-none');
+  document.getElementById('step-tab-' + currentStep)
+          .classList.remove('active');
+  currentStep = n;
+  document.getElementById('form-step-' + n)
+          .classList.remove('d-none');
+  document.getElementById('step-tab-' + n)
+          .classList.add('active');
+  if (n === 4) buildReview();
+}
+
+// ── GET ALL FORM VALUES ────────────────────────────
+function getAllValues() {
+  const data = {};
+  FIELDS.forEach(function(f) {
+    var el = document.getElementById('field_' + f.key);
+    if (el) data[f.label] = el.value || '';
+  });
+  var district = document.getElementById('field_district');
+  var purpose  = document.getElementById('field_purpose');
+  var email    = document.getElementById('field_email');
+  var mobile   = document.getElementById('field_mobile');
+  var address  = document.getElementById('field_address');
+  if (district) data['District'] = district.value || '';
+  if (purpose)  data['Purpose']  = purpose.value  || '';
+  if (email)    data['Email']    = email.value    || '';
+  if (mobile)   data['Mobile']   = mobile.value   || '';
+  if (address)  data['Address']  = address.value  || '';
+  return data;
+}
+
+// ── LIVE PREVIEW ───────────────────────────────────
+function updatePreview() {
+  var box  = document.getElementById('previewFields');
+  var data = getAllValues();
+  var html = '';
+  Object.keys(data).forEach(function(label) {
+    var val = data[label];
+    if (val) {
+      html += '<div class="preview-row">';
+      html += '<span class="preview-label">' + label + '</span>';
+      html += '<span class="preview-value">' + val + '</span>';
+      html += '</div>';
+    }
+  });
+  box.innerHTML = html ||
+    '<p class="text-muted text-center" style="font-size:13px;">Fill the form to see preview</p>';
+}
+
+// ── REVIEW SUMMARY ─────────────────────────────────
+function buildReview() {
+  var data = getAllValues();
+  var box  = document.getElementById('reviewSummary');
+  var html = '';
+  Object.keys(data).forEach(function(label) {
+    var val = data[label];
+    html += '<div class="preview-row">';
+    html += '<span class="preview-label">' + label + '</span>';
+    html += '<span class="preview-value">' + (val || '—') + '</span>';
+    html += '</div>';
+  });
+  box.innerHTML = html;
+  updatePreview();
+}
+
+// ── SUBMIT APPLICATION ─────────────────────────────
+async function submitApplication() {
+  var btn = document.getElementById('submitBtn');
+  btn.textContent = '⏳ Processing...';
+  btn.disabled = true;
+
+  var rawData = {};
+  FIELDS.forEach(function(f) {
+    var el = document.getElementById('field_' + f.key);
+    if (el) rawData[f.key] = el.value;
+  });
+  var district = document.getElementById('field_district');
+  var purpose  = document.getElementById('field_purpose');
+  var email    = document.getElementById('field_email');
+  var mobile   = document.getElementById('field_mobile');
+  var address  = document.getElementById('field_address');
+  if (district) rawData['district'] = district.value;
+  if (purpose)  rawData['purpose']  = purpose.value;
+  if (email)    rawData['email']    = email.value;
+  if (mobile)   rawData['mobile']   = mobile.value;
+  if (address)  rawData['address']  = address.value;
+
+  try {
+    var res = await fetch(
+      '/applications/form/' + SERVICE_ID + '/submit',
+      {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({form_data: rawData})
+      }
+    );
+    var data = await res.json();
+
+    if (data.success) {
+      appId = data.app_id;
+      showResult(data, rawData);
+    } else {
+      alert('Submission failed. Please try again.');
+      btn.textContent = '✅ Generate Form & Find Office';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    alert('Error: ' + e.message);
+    btn.textContent = '✅ Generate Form & Find Office';
+    btn.disabled = false;
+  }
+}
+
+// ── SHOW RESULT ────────────────────────────────────
+async function showResult(data, formData) {
+  document.getElementById('resultSection')
+          .classList.remove('d-none');
+  document.getElementById('resultSection')
+          .scrollIntoView({behavior: 'smooth'});
+
+  document.getElementById('resultAppNo').textContent =
+    'Application No: ' + data.application_no;
+
+  document.getElementById('downloadPdfBtn').href =
+    '/applications/' + data.app_id + '/preview-pdf';
+
+  // Filled data preview
+  var previewBox = document.getElementById('resultPreview');
+  var html = '';
+  Object.keys(formData).forEach(function(key) {
+    var label = key.split('_').map(function(w) {
+  return w.charAt(0).toUpperCase() + w.slice(1);
+}).join(' ');
+    html += '<div class="preview-row">';
+    html += '<span class="preview-label">' + label + '</span>';
+    html += '<span class="preview-value">' +
+            (formData[key] || '—') + '</span>';
+    html += '</div>';
+  });
+  previewBox.innerHTML = html;
+
+  // Find nearest office
+  var district = formData['district'] || '';
+  if (district) {
+    try {
+      var officeRes = await fetch(
+        '/applications/nearest-office?' +
+        'service=' + encodeURIComponent(SERVICE) +
+        '&district=' + encodeURIComponent(district)
+      );
+      var office = await officeRes.json();
+      showOffice(office, district);
+    } catch(e) {
+      document.getElementById('officeInfo').innerHTML =
+        '<p class="text-muted">' + I18N.could_not_find_office + '</p>';
+    }
+  }
+}
+
+// ── SHOW OFFICE INFO ───────────────────────────────
+function showOffice(office, requestedDistrict) {
+  var box = document.getElementById('officeInfo');
+  if (office.error) {
+    box.innerHTML =
+      '<p class="text-muted">' + I18N.no_office_found_error + '</p>';
+    return;
+  }
+  var mapsUrl = 'https://www.google.com/maps?q=' +
+                office.lat + ',' + office.lng;
+
+  var noteHtml = '';
+  if (office.matched === false) {
+    var noteText = I18N.no_office_in_district_note
+      .replace('{service}', SERVICE)
+      .replace('{district}', requestedDistrict)
+      .replace('{office_district}', office.district);
+    if (office.distance_km) {
+      noteText += ' ' + I18N.approx_km_away.replace('{km}', office.distance_km);
+    } else {
+      noteText += '.';
+    }
+    noteHtml =
+      '<div class="alert alert-warning py-2 px-3 mb-2" style="font-size:12.5px;">' +
+      '⚠️ ' + noteText +
+      '</div>';
+  }
+
+  box.innerHTML =
+    noteHtml +
+    '<div class="d-flex align-items-start gap-3">' +
+    '<div style="font-size:32px;">🏛️</div>' +
+    '<div>' +
+    '<div class="fw-700" style="font-size:16px;">' +
+    office.office_name + '</div>' +
+    '<div class="text-muted" style="font-size:13px;margin-top:4px;">' +
+    office.address + '</div>' +
+    (office.phone
+      ? '<div style="font-size:13px;margin-top:4px;">📞 ' +
+        office.phone + '</div>'
+      : '') +
+    (office.matched === false && office.distance_km
+      ? '<div style="font-size:12.5px;margin-top:4px;color:var(--muted);">' +
+        I18N.approx_km_from.replace('{km}', office.distance_km).replace('{district}', office.district) +
+        '</div>'
+      : '') +
+    '<a href="' + mapsUrl + '" target="_blank" ' +
+    'class="btn mt-3" ' +
+    'style="background:var(--primary);color:#fff;font-size:13px;">' +
+    I18N.get_directions + '</a>' +
+    '</div></div>';
+}
+
+updatePreview();
+</script>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+{% block public_content %}
+<div class="auth-page py-5">
+  <div class="auth-card" style="max-width:520px;margin:0 auto;">
+
+    <div class="text-center mb-4">
+      <div style="font-size:36px;">⚖️</div>
+      <h2 class="fw-800 mt-2" style="color:var(--primary);">
+        Create Account
+      </h2>
+      <p class="text-muted">Join Legal & Civic Assistant</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+      <div class="alert alert-{{ cat }} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="btn-close"
+                data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" id="registerForm" novalidate>
+
+      <div class="mb-3">
+        <label class="form-label fw-600">Full Name</label>
+        <input type="text" name="fullname" id="fullname"
+               class="form-control"
+               placeholder="Enter your full name"/>
+        <div class="invalid-feedback" id="fullname-error"></div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600">Email Address</label>
+        <input type="email" name="email" id="email"
+               class="form-control"
+               placeholder="example@gmail.com"/>
+        <div class="invalid-feedback" id="email-error"></div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600">Mobile Number</label>
+        <input type="tel" name="mobile" id="mobile"
+               class="form-control"
+               placeholder="07X XXXXXXX"/>
+        <div class="invalid-feedback" id="mobile-error"></div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-600">
+          {{ t('nic') }}
+          <span class="text-muted fw-500" style="font-size:12px;">({{ t('optional') }})</span>
+        </label>
+        <input type="text" name="nic" id="nic"
+               class="form-control"
+               placeholder="200012345678 or 991234567V"/>
+        <div class="invalid-feedback" id="nic-error"></div>
+        <small class="text-muted d-block mt-1" style="font-size:12px;">
+          {{ t('nic_optional_hint') }}
+        </small>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-600">Password</label>
+          <div class="input-group">
+            <input type="password" name="password" id="password"
+                   class="form-control" placeholder="Min 6 chars"/>
+            <button class="btn btn-outline-secondary" type="button"
+                    onclick="togglePass('password','eye1')">
+              <i class="bi bi-eye" id="eye1"></i>
+            </button>
+          </div>
+          <div class="invalid-feedback d-block"
+               id="password-error"></div>
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-600">Confirm Password</label>
+          <div class="input-group">
+            <input type="password" name="confirm_password"
+                   id="confirm_password"
+                   class="form-control" placeholder="Re-enter"/>
+            <button class="btn btn-outline-secondary" type="button"
+                    onclick="togglePass('confirm_password','eye2')">
+              <i class="bi bi-eye" id="eye2"></i>
+            </button>
+          </div>
+          <div class="invalid-feedback d-block"
+               id="confirm-error"></div>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label fw-600">Preferred Language</label>
+        <select name="preferred_language" class="form-select">
+          <option value="English">🇬🇧 English</option>
+          <option value="Tamil">🇮🇳 தமிழ் (Tamil)</option>
+          <option value="Sinhala">🇱🇰 සිංහල (Sinhala)</option>
+        </select>
+      </div>
+
+      <!-- Password Strength -->
+      <div class="mb-3" id="strengthBox" style="display:none;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">
+          Password Strength
+        </div>
+        <div style="height:6px;border-radius:4px;background:#e2e8f0;">
+          <div id="strengthBar"
+               style="height:6px;border-radius:4px;
+                      width:0%;transition:all 0.3s;"></div>
+        </div>
+        <div id="strengthText"
+             style="font-size:11px;margin-top:4px;"></div>
+      </div>
+
+      <button type="submit" id="submitBtn"
+              class="btn w-100 py-2"
+              style="background:var(--primary);color:#fff;
+                     font-size:16px;">
+        Create Account
+      </button>
+    </form>
+
+    <p class="text-center mt-4" style="font-size:14px;">
+      Already have an account?
+      <a href="{{ url_for('auth.login') }}"
+         style="font-weight:700;color:var(--primary);">
+        Login here
+      </a>
+    </p>
+  </div>
+</div>
+
+<script>
+// Toggle password visibility
+function togglePass(id, eyeId) {
+  var input = document.getElementById(id);
+  var eye   = document.getElementById(eyeId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.className = 'bi bi-eye-slash';
+  } else {
+    input.type = 'password';
+    eye.className = 'bi bi-eye';
+  }
+}
+
+// Password strength checker
+document.getElementById('password').addEventListener('input', function() {
+  var val = this.value;
+  var box = document.getElementById('strengthBox');
+  var bar = document.getElementById('strengthBar');
+  var txt = document.getElementById('strengthText');
+
+  if (val.length === 0) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+
+  var score = 0;
+  if (val.length >= 6)  score++;
+  if (val.length >= 10) score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+
+  var colors = ['#dc2626','#f97316','#eab308','#22c55e','#16a34a'];
+  var labels = ['Very Weak','Weak','Fair','Strong','Very Strong'];
+  var widths = ['20%','40%','60%','80%','100%'];
+
+  bar.style.width  = widths[score - 1] || '0%';
+  bar.style.background = colors[score - 1] || '#e2e8f0';
+  txt.textContent  = labels[score - 1] || '';
+  txt.style.color  = colors[score - 1] || '#64748b';
+});
+
+// Form validation
+document.getElementById('registerForm').addEventListener('submit',
+function(e) {
+  var valid = true;
+
+  // Clear all errors
+  ['fullname','email','mobile','nic',
+   'password','confirm_password'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('is-invalid','is-valid');
+    }
+  });
+
+  // Full Name
+  var fullname = document.getElementById('fullname').value.trim();
+  if (fullname.length < 3) {
+    showError('fullname', 'fullname-error',
+              'Full name must be at least 3 characters');
+    valid = false;
+  } else {
+    showSuccess('fullname');
+  }
+
+  // Email
+  var email = document.getElementById('email').value.trim();
+  var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    showError('email', 'email-error',
+              'Please enter a valid email address');
+    valid = false;
+  } else {
+    showSuccess('email');
+  }
+
+  // Mobile
+  var mobile = document.getElementById('mobile').value.trim();
+  var mobileRegex = /^0[0-9]{9}$/;
+  if (mobile && !mobileRegex.test(mobile)) {
+    showError('mobile', 'mobile-error',
+              'Enter valid Sri Lanka mobile (e.g. 0771234567)');
+    valid = false;
+  } else if (mobile) {
+    showSuccess('mobile');
+  }
+
+  // NIC
+  var nic = document.getElementById('nic').value.trim();
+  var nicOld = /^[0-9]{9}[VvXx]$/;
+  var nicNew = /^[0-9]{12}$/;
+  if (nic && !nicOld.test(nic) && !nicNew.test(nic)) {
+    showError('nic', 'nic-error',
+              'Enter valid NIC (e.g. 991234567V or 200012345678)');
+    valid = false;
+  } else if (nic) {
+    showSuccess('nic');
+  }
+
+  // Password
+  var password = document.getElementById('password').value;
+  if (password.length < 6) {
+    showError('password', 'password-error',
+              'Password must be at least 6 characters');
+    valid = false;
+  } else {
+    showSuccess('password');
+  }
+
+  // Confirm Password
+  var confirm = document.getElementById('confirm_password').value;
+  if (confirm !== password) {
+    showError('confirm_password', 'confirm-error',
+              'Passwords do not match');
+    valid = false;
+  } else if (confirm) {
+    showSuccess('confirm_password');
+  }
+
+  if (!valid) {
+    e.preventDefault();
+    // Scroll to first error
+    var firstError = document.querySelector('.is-invalid');
+    if (firstError) {
+      firstError.scrollIntoView({behavior:'smooth', block:'center'});
+    }
+  }
+});
+
+function showError(inputId, errorId, msg) {
+  var input = document.getElementById(inputId);
+  var error = document.getElementById(errorId);
+  if (input) input.classList.add('is-invalid');
+  if (error) {
+    error.textContent = msg;
+    error.style.display = 'block';
+    error.style.color = '#dc2626';
+    error.style.fontSize = '12px';
+    error.style.marginTop = '4px';
+  }
+}
+
+function showSuccess(inputId) {
+  var input = document.getElementById(inputId);
+  if (input) input.classList.add('is-valid');
+}
+</script>
+{% endblock %}

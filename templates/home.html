@@ -1,0 +1,65 @@
+{% extends 'base.html' %} {% block public_content %}
+<div class="home-hero">
+  <div class="container py-5">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div
+            style="
+              background: rgba(255, 255, 255, 0.15);
+              border-radius: 12px;
+              padding: 12px;
+              font-size: 28px;
+            "
+          ></div>
+          <div>
+            <div style="font-size: 20px; font-weight: 900">Legal & Civic</div>
+            <div style="font-size: 13px; opacity: 0.7">Service Assistant</div>
+          </div>
+        </div>
+        <h1>
+          Your Trusted Guide to<br /><span style="color: #f0c040"
+            >Government Services</span
+          ><br />in Sri Lanka
+        </h1>
+        <p class="mt-3" style="font-size: 17px; opacity: 0.85">
+          Get instant legal guidance, step-by-step service guides, and document
+          checklists — powered by AI, in English, Tamil and Sinhala.
+        </p>
+        <div class="mt-4 d-flex gap-3 flex-wrap">
+          <a
+            href="{{ url_for('auth.register') }}"
+            class="btn btn-warning fw-bold px-4 py-2 rounded-3"
+            >Get Started</a
+          >
+          <a
+            href="{{ url_for('auth.login') }}"
+            class="btn btn-outline-light fw-bold px-4 py-2 rounded-3"
+            >Login</a
+          >
+        </div>
+        <div class="mt-4 d-flex gap-2 flex-wrap">
+          <span class="badge bg-light text-dark px-3 py-2">🇬🇧 English</span>
+          <span class="badge bg-light text-dark px-3 py-2">🇮🇳 தமிழ்</span>
+          <span class="badge bg-light text-dark px-3 py-2">🇱🇰 සිංහල</span>
+        </div>
+      </div>
+      <div class="col-lg-6 mt-5 mt-lg-0">
+        <h6 class="mb-3 opacity-75">Popular Services</h6>
+        <div class="row g-3">
+          {% set svcs = [('🪪','NIC Application'),('🛂','Passport'),('📋','Birth
+          Certificate'),('🚗','Driving License'),('👮','Police Clearance')] %}
+          {% for icon, name in svcs %}
+          <div class="col-6">
+            <div class="hero-card">
+              <div style="font-size: 28px; margin-bottom: 8px">{{ icon }}</div>
+              <div style="font-size: 13px; font-weight: 600">{{ name }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

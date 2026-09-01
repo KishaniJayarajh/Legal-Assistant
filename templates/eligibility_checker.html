@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% block title %}{{ t('eligibility_checker') }}{% endblock %}
+{% block page_title %}{{ t('eligibility_checker') }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="card-custom">
+      <div class="card-header">
+        <i class="bi bi-patch-check-fill me-2 text-primary"></i>
+        {{ t('eligibility_checker') }}
+      </div>
+      <div class="card-body">
+        <div class="row g-4">
+
+          <!-- STEP SIDEBAR -->
+          <div class="col-md-3">
+            <div class="wizard-steps">
+              <div class="wizard-step active" data-step="1">
+                <span class="wizard-step-num">1</span> {{ t('service_type') }}
+              </div>
+              <div class="wizard-step" data-step="2">
+                <span class="wizard-step-num">2</span> {{ t('personal_details') }}
+              </div>
+              <div class="wizard-step" data-step="3">
+                <span class="wizard-step-num">3</span> {{ t('additional_questions') }}
+              </div>
+              <div class="wizard-step" data-step="4">
+                <span class="wizard-step-num">4</span> {{ t('result') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP CONTENT -->
+          <div class="col-md-9">
+
+            <!-- STEP 1: Service Type -->
+            <div class="wizard-pane" id="pane-1">
+              <h6 class="fw-700 mb-3">{{ t('which_service_checking') }}</h6>
+              <div class="row g-2">
+                {% for st in service_types %}
+                <div class="col-6">
+                  <label class="elig-option">
+                    <input type="radio" name="service_type"
+                           value="{{ st.key if st is mapping else st }}"
+                           {% if loop.first %}checked{% endif %}/>
+                    <span>{{ st.label if st is mapping else st }}</span>
+                  </label>
+                </div>
+                {% endfor %}
+              </div>
+              <button class="btn mt-4"
+                      style="background:var(--primary);color:#fff;"
+                      onclick="goToStep(2)">
+                {{ t('next') }} →
+              </button>
+            </div>
+
+            <!-- STEP 2: Questions -->
+            <div class="wizard-pane d-none" id="pane-2">
+              <h6 class="fw-700 mb-3">
+                {{ t('personal_details') }} / {{ t('additional_questions') }}
+              </h6>
+              <div id="questionsContainer" class="d-flex flex-column gap-3">
+                <div class="text-muted">Loading...</div>
+              </div>
+              <div class="d-flex gap-2 mt-4">
+                <button class="btn btn-outline-secondary"
+                        onclick="goToStep(1)">
+                  ← {{ t('previous') }}
+                </button>
+                <button class="btn"
+                        style="background:var(--primary);color:#fff;"
+                        onclick="submitEligibility()">
+                  {{ t('check_eligibility') }}
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 4: Result -->
+            <div class="wizard-pane d-none" id="pane-3">
+              <div id="resultBox" class="text-center py-4"></div>
+              <button class="btn btn-outline-secondary mt-3"
+                      onclick="goToStep(1)">
+                {{ t('back') }}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function goToStep(step) {
+  document.querySelectorAll('.wizard-pane')
+          .forEach(p => p.classList.add('d-none'));
+  document.querySelectorAll('.wizard-step')
+          .forEach(s => s.classList.remove('active'));
+
+  if (step === 1) {
+    document.getElementById('pane-1').classList.remove('d-none');
+    document.querySelector('[data-step="1"]').classList.add('active');
+  } else if (step === 2) {
+    loadQuestions();
+    document.getElementById('pane-2').classList.remove('d-none');
+    document.querySelector('[data-step="2"]').classList.add('active');
+  } else if (step === 4) {
+    document.getElementById('pane-3').classList.remove('d-none');
+    document.querySelector('[data-step="4"]').classList.add('active');
+  }
+}
+
+async function loadQuestions() {
+  const radio = document.querySelector(
+    'input[name="service_type"]:checked'
+  );
+  if (!radio) return;
+
+  const serviceType = radio.value;
+  const container = document.getElementById('questionsContainer');
+  container.innerHTML = '<div class="text-muted">Loading...</div>';
+
+  try {
+    const res = await fetch(
+      `/tools/eligibility-checker/questions/${encodeURIComponent(serviceType)}`
+    );
+    const data = await res.json();
+
+    container.innerHTML = '';
+    (data.questions || []).forEach(q => {
+      const wrap = document.createElement('div');
+      if (q.type === 'yesno') {
+        wrap.innerHTML = `
+          <label class="form-label fw-600">${q.label}</label>
+          <div class="d-flex gap-3">
+            <label class="elig-option-sm">
+              <input type="radio" name="${q.key}" value="yes"/> Yes
+            </label>
+            <label class="elig-option-sm">
+              <input type="radio" name="${q.key}" value="no"/> No
+            </label>
+          </div>`;
+      } else {
+        wrap.innerHTML = `
+          <label class="form-label fw-600">${q.label}</label>
+          <input type="number" class="form-input"
+                 name="${q.key}" style="max-width:200px;"/>`;
+      }
+      container.appendChild(wrap);
+    });
+  } catch(e) {
+    container.innerHTML = '<div class="text-danger">Error loading questions.</div>';
+  }
+}
+
+async function submitEligibility() {
+  const radio = document.querySelector(
+    'input[name="service_type"]:checked'
+  );
+  if (!radio) return;
+
+  const serviceType = radio.value;
+  const answers = {};
+
+  document.querySelectorAll('#questionsContainer input')
+          .forEach(input => {
+    if (input.type === 'radio') {
+      if (input.checked) answers[input.name] = input.value;
+    } else {
+      answers[input.name] = input.value;
+    }
+  });
+
+  try {
+    const res = await fetch('/tools/eligibility-checker/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_type: serviceType,
+        answers: answers
+      })
+    });
+    const data = await res.json();
+
+    const box = document.getElementById('resultBox');
+    const msg = data.message || 'Please check your answers.';
+
+    if (data.eligible) {
+      box.innerHTML = `
+        <div style="font-size:56px;">✅</div>
+        <h5 class="fw-800 text-success mt-2">Eligible</h5>
+        <p class="text-muted">${msg}</p>`;
+    } else {
+      box.innerHTML = `
+        <div style="font-size:56px;">⚠️</div>
+        <h5 class="fw-800 text-danger mt-2">Not Eligible</h5>
+        <p class="text-muted">${msg}</p>`;
+    }
+    goToStep(4);
+  } catch(e) {
+    alert('Error checking eligibility. Please try again.');
+  }
+}
+</script>
+{% endblock %}

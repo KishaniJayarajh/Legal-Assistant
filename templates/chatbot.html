@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}AI Chat Assistant{% endblock %}
+{% block page_title %}{{ t('ai_chat') }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card-custom">
+      <div class="card-header">
+        <span><i class="bi bi-robot me-2 text-primary"></i>{{ t('ai_chat') }}</span>
+        <span id="aiStatusBadge" class="{{ 'ai-active-badge' if ai_active else 'fallback-badge' }}">
+          {{ t('ai_active') if ai_active else t('ai_fallback') }}
+        </span>
+      </div>
+      <div class="card-body">
+
+        <div class="chat-window" id="chatWindow">
+          <div class="chat-row">
+            <div class="chat-avatar bot">🤖</div>
+            <div class="chat-bubble bot">
+              {{ t('how_can_i_help') }}<br/>
+              <span style="font-size:12px;opacity:0.7;">Ask me about NIC, Passport, Birth/Marriage Certificate, Land Registration, Driving License, Police Clearance, or Visa information.</span>
+            </div>
+          </div>
+          {% for c in history %}
+          <div class="chat-row user-row">
+            <div class="chat-avatar user">👤</div>
+            <div class="chat-bubble user">{{ c.question }}</div>
+          </div>
+          <div class="chat-row">
+            <div class="chat-avatar bot">🤖</div>
+            <div class="chat-bubble bot">{{ c.response }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 my-3" id="suggestedQs">
+          <button class="suggested-q" onclick="quickAsk('How to apply for NIC?')">How to apply for NIC?</button>
+          <button class="suggested-q" onclick="quickAsk('Passport renewal process')">Passport renewal process</button>
+          <button class="suggested-q" onclick="quickAsk('Birth certificate requirements')">Birth certificate requirements</button>
+          <button class="suggested-q" onclick="quickAsk('Land ownership transfer')">Land ownership transfer</button>
+          <button class="suggested-q" onclick="quickAsk('Marriage certificate')">Marriage certificate</button>
+        </div>
+
+        <div class="chat-input-row">
+          <input type="text" class="chat-input" id="userInput" placeholder="{{ t('type_question') }}" onkeydown="if(event.key==='Enter')sendMsg()"/>
+          <button class="send-btn" onclick="sendMsg()"><i class="bi bi-send-fill"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const chatBox = document.getElementById('chatWindow');
+function scrollBottom(){ chatBox.scrollTop = chatBox.scrollHeight; }
+
+function appendMsg(role, text){
+  const isUser = role === 'user';
+  const div = document.createElement('div');
+  div.className = `chat-row ${isUser ? 'user-row' : ''}`;
+  div.innerHTML = `<div class="chat-avatar ${isUser?'user':'bot'}">${isUser?'👤':'🤖'}</div>
+    <div class="chat-bubble ${isUser?'user':'bot'}">${text}</div>`;
+  chatBox.appendChild(div); scrollBottom();
+}
+
+function appendTyping(){
+  const div = document.createElement('div');
+  div.className = 'chat-row'; div.id = 'typing';
+  div.innerHTML = `<div class="chat-avatar bot">🤖</div><div class="chat-bubble bot" style="opacity:0.6;">Thinking...</div>`;
+  chatBox.appendChild(div); scrollBottom();
+}
+
+async function sendMsg(){
+  const inp = document.getElementById('userInput');
+  const q = inp.value.trim();
+  if(!q) return;
+  inp.value = '';
+  document.getElementById('suggestedQs').style.display = 'none';
+  appendMsg('user', q);
+  appendTyping();
+  try{
+    const res = await fetch('/ai-chat/ask', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({question:q})
+    });
+    const data = await res.json();
+    document.getElementById('typing')?.remove();
+    appendMsg('bot', data.response);
+  }catch(e){
+    document.getElementById('typing')?.remove();
+    appendMsg('bot','Sorry, an error occurred. Please try again.');
+  }
+}
+
+function quickAsk(q){ document.getElementById('userInput').value = q; sendMsg(); }
+
+scrollBottom();
+</script>
+{% endblock %}

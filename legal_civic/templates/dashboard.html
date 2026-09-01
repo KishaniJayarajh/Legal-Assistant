@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}{{ t('dashboard') }}{% endblock %}
+{% block content %}
+
+<div class="card-custom mb-4" style="background:linear-gradient(135deg,#334155,#0f766e); color:#fff; border:none;">
+  <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <h4 class="fw-800 mb-1">{{ t('welcome_back') }}, {{ current_user.fullname }}! 👋</h4>
+      <p class="mb-0 opacity-85">{{ t('how_can_i_help') }}</p>
+    </div>
+    <a href="{{ url_for('chatbot.chat_page') }}" class="btn btn-gold fw-bold px-4">💬 {{ t('start_chat') }}</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('chatbot.chat_page') }}" class="quick-card">
+      <div class="quick-icon bg-primary-soft">💬</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('ai_chat') }}</div>
+      <div class="text-muted" style="font-size:12px;">Ask any legal or civic question</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('services.list_services') }}" class="quick-card">
+      <div class="quick-icon bg-success-soft">🏛️</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('gov_services') }}</div>
+      <div class="text-muted" style="font-size:12px;">Explore all services</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('checklist.checklist_page') }}" class="quick-card">
+      <div class="quick-icon" style="background:#ede9fe;color:#7c3aed;">📋</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('doc_checklist') }}</div>
+      <div class="text-muted" style="font-size:12px;">Required documents</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('services.list_services') }}" class="quick-card">
+      <div class="quick-icon bg-warning-soft">🔗</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('official_links') }}</div>
+      <div class="text-muted" style="font-size:12px;">Government websites</div>
+    </a>
+  </div>
+</div>
+
+<h6 class="fw-700 mb-3 mt-2">{{ t('tools') }}</h6>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('tools.eligibility_checker') }}" class="quick-card">
+      <div class="quick-icon" style="background:#fef3c7;color:#92400e;">✅</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('eligibility_checker') }}</div>
+      <div class="text-muted" style="font-size:12px;">{{ t('eligibility_checker_desc') }}</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('checklist.checklist_page') }}" class="quick-card">
+      <div class="quick-icon" style="background:#dbeafe;color:#1e40af;">📋</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('document_checklist_tool') }}</div>
+      <div class="text-muted" style="font-size:12px;">{{ t('document_checklist_desc') }}</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('services.list_services') }}" class="quick-card">
+      <div class="quick-icon" style="background:#ede9fe;color:#7c3aed;">📝</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('form_assistant') }}</div>
+      <div class="text-muted" style="font-size:12px;">{{ t('form_assistant_desc') }}</div>
+    </a>
+  </div>
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('tools.service_finder') }}" class="quick-card">
+      <div class="quick-icon" style="background:#d1fae5;color:#065f46;">🔍</div>
+      <div class="fw-700" style="font-size:14px;">{{ t('service_finder') }}</div>
+      <div class="text-muted" style="font-size:12px;">{{ t('service_finder_desc') }}</div>
+    </a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card-custom mb-4">
+      <div class="card-header">📊 My Activity</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="stat-card">
+              <div class="stat-num text-primary">{{ chat_count }}</div>
+              <div class="stat-label">{{ t('my_chats') }}</div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="stat-card">
+              <div class="stat-num text-success">{{ saved_count }}</div>
+              <div class="stat-label">{{ t('saved_guides') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-custom">
+      <div class="card-header">🕐 {{ t('recent_chats') }} <a href="{{ url_for('chatbot.chat_page') }}" class="btn btn-sm btn-outline-primary">View All</a></div>
+      <div class="card-body">
+        {% if recent_chats %}
+          {% for c in recent_chats %}
+          <div class="d-flex justify-content-between border-bottom py-2">
+            <span style="font-size:14px;">{{ c.question[:60] }}{% if c.question|length > 60 %}...{% endif %}</span>
+            <span class="text-muted" style="font-size:12px;">{{ c.created_at.strftime('%b %d') }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+        <div class="text-center text-muted py-4">No chats yet. <a href="{{ url_for('chatbot.chat_page') }}">Start chatting!</a></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card-custom mb-4">
+      <div class="card-header">⭐ {{ t('popular_services') }}</div>
+      <div class="card-body">
+        {% for s in popular %}
+        <a href="{{ url_for('services.service_detail', service_id=s.id) }}" class="d-flex align-items-center gap-2 text-decoration-none text-dark border-bottom py-2">
+          <span style="font-size:20px;">{{ s.icon }}</span>
+          <span style="font-size:14px;">{{ s.name }}</span>
+        </a>
+        {% else %}
+        <p class="text-muted text-center">No services yet</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="card-custom" style="background:#fff7ed;border-color:#fed7aa;">
+      <div class="card-body text-center">
+        <div style="font-size:32px;">🎧</div>
+        <div class="fw-700 mt-2">{{ t('need_help') }}</div>
+        <div class="text-muted" style="font-size:13px;">{{ t('ai_available_247') }}</div>
+        <a href="{{ url_for('chatbot.chat_page') }}" class="btn btn-sm mt-2" style="background:var(--accent);color:#fff;">{{ t('ask_now') }}</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

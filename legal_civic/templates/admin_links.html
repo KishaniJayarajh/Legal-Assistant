@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Official Links{% endblock %}
+{% block page_title %}Official Government Links{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card-custom">
+      <div class="card-header">➕ Add Official Link</div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('admin.add_link') }}">
+          <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Department of Immigration" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">URL</label>
+            <input type="url" name="url" class="form-control" placeholder="https://www.immigration.gov.lk" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Department</label>
+            <input type="text" name="department" class="form-control" placeholder="e.g. Immigration & Emigration"/>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Icon (emoji)</label>
+            <input type="text" name="icon" class="form-control" placeholder="🔗"/>
+          </div>
+          <button type="submit" class="btn w-100" style="background:var(--primary);color:#fff;">Add Link</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card-custom">
+      <div class="card-header">🔗 All Official Links ({{ links|length }})</div>
+      <div class="card-body">
+        {% for l in links %}
+        <a href="{{ l.url }}" target="_blank" class="d-flex align-items-center gap-3 text-decoration-none text-dark border-bottom py-3">
+          <span style="font-size:24px;">{{ l.icon }}</span>
+          <div>
+            <div class="fw-700">{{ l.title }}</div>
+            <div class="text-muted" style="font-size:12px;">{{ l.department }}</div>
+          </div>
+          <i class="bi bi-box-arrow-up-right ms-auto text-muted"></i>
+        </a>
+        {% else %}
+        <p class="text-muted text-center py-4">No official links added yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}All Applications{% endblock %}
+{% block page_title %}All Applications{% endblock %}
+{% block content %}
+<div class="card-custom">
+  <div class="card-header">
+    <span><i class="bi bi-file-earmark-text me-2"></i>
+    All Applications ({{ documents|length }})</span>
+  </div>
+  <div class="card-body p-0">
+    {% if documents %}
+    <table class="table mb-0">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th class="ps-3">Application No</th>
+          <th>User</th>
+          <th>Service Type</th>
+          <th>Status</th>
+          <th class="pe-3">Submitted Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in documents %}
+        <tr>
+          <td class="ps-3" style="font-size:13px;">
+            <strong>{{ d.application_no }}</strong>
+          </td>
+          <td style="font-size:13px;">
+            {{ d.user.fullname }}
+          </td>
+          <td style="font-size:13px;">
+            {{ d.application_type }}
+          </td>
+          <td>
+            {% if d.status == 'Completed' %}
+              <span class="badge bg-success">{{ d.status }}</span>
+            {% elif d.status == 'Rejected' %}
+              <span class="badge bg-danger">{{ d.status }}</span>
+            {% else %}
+              <span class="badge bg-warning">{{ d.status }}</span>
+            {% endif %}
+          </td>
+          <td class="pe-3" style="font-size:12px;">
+            {{ d.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-folder-x"
+         style="font-size:48px;opacity:0.4;"></i>
+      <p class="mt-3">No applications submitted yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

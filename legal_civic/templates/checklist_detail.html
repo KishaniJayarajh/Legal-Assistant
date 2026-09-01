@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Checklist – {{ service.name }}{% endblock %}
+{% block page_title %}{{ t('doc_checklist') }}{% endblock %}
+{% block content %}
+<div class="card-custom">
+  <div class="card-header">
+    <span>{{ service.icon }} {{ service.name }} — {{ t('required_documents') }}</span>
+    <span class="badge bg-primary" id="progressBadge">0 / {{ documents|length }}</span>
+  </div>
+  <div class="card-body">
+    {% if documents %}
+      {% for doc in documents %}
+      <div class="form-check border-bottom py-2">
+        <input class="form-check-input checklist-item" type="checkbox" id="doc{{ doc.id }}" onclick="updateProgress()"/>
+        <label class="form-check-label" for="doc{{ doc.id }}" style="font-size:14px;">
+          {{ doc.document_name }}
+          <span class="{{ 'badge-mandatory' if doc.is_mandatory else 'badge-optional' }} ms-2">
+            {{ t('mandatory') if doc.is_mandatory else t('optional') }}
+          </span>
+        </label>
+      </div>
+      {% endfor %}
+    {% else %}
+    <p class="text-muted text-center py-4">No documents listed for this service yet.</p>
+    {% endif %}
+  </div>
+</div>
+<a href="{{ url_for('checklist.checklist_page') }}" class="btn btn-outline-secondary mt-3">← {{ t('back') }}</a>
+{% endblock %}
+{% block scripts %}
+<script>
+function updateProgress(){
+  const items = document.querySelectorAll('.checklist-item');
+  const checked = document.querySelectorAll('.checklist-item:checked').length;
+  document.getElementById('progressBadge').textContent = `${checked} / ${items.length}`;
+}
+</script>
+{% endblock %}

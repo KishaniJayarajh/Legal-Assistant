@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Manage Services{% endblock %}
+{% block page_title %}Manage Services{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h5 class="fw-700 mb-0">All Services ({{ services|length }})</h5>
+  <a href="{{ url_for('admin.add_service') }}" class="btn" style="background:var(--primary);color:#fff;">
+    <i class="bi bi-plus-circle me-1"></i>Add New Service
+  </a>
+</div>
+<div class="card-custom">
+  <div class="card-body p-0">
+    {% if services %}
+    <table class="table mb-0">
+      <thead style="background:#f8fafc;">
+        <tr><th class="ps-3">Service</th><th>Category</th><th>Status</th><th class="text-end pe-3">Actions</th></tr>
+      </thead>
+      <tbody>
+        {% for s in services %}
+        <tr>
+          <td class="ps-3">{{ s.icon }} {{ s.name }}</td>
+          <td><span class="badge bg-secondary">{{ s.category }}</span></td>
+          <td>
+            <span class="badge {{ 'bg-success' if s.status=='Active' else 'bg-danger' }}">{{ s.status }}</span>
+          </td>
+          <td class="text-end pe-3">
+            <a href="{{ url_for('admin.edit_service', sid=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <a href="{{ url_for('admin.delete_service', sid=s.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this service?')"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-inbox" style="font-size:48px;opacity:0.4;"></i>
+      <p class="mt-3">No services yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

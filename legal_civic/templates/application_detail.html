@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ application.application_no }}{% endblock %}
+{% block page_title %}Application Details{% endblock %}
+{% block content %}
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+
+    <div class="card-custom mb-3">
+      <div class="card-header">
+        <span>
+          <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+          {{ application.application_no }}
+        </span>
+        {% if application.status == 'Completed' %}
+        <span class="badge bg-success">Completed</span>
+        {% elif application.status == 'Rejected' %}
+        <span class="badge bg-danger">Rejected</span>
+        {% else %}
+        <span class="badge bg-warning text-dark">In Progress</span>
+        {% endif %}
+      </div>
+      <div class="card-body">
+
+        <div class="row mb-3">
+          <div class="col-6">
+            <div class="text-muted" style="font-size:12px;">
+              Service
+            </div>
+            <div class="fw-700">
+              {{ application.application_type }}
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="text-muted" style="font-size:12px;">
+              Submitted On
+            </div>
+            <div>
+              {{ application.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+            </div>
+          </div>
+        </div>
+
+        <hr/>
+        <h6 class="fw-700 mb-3">Submitted Details</h6>
+
+        {% for key, value in form_data.items() %}
+        <div class="d-flex justify-content-between
+                    border-bottom py-2">
+          <span class="text-muted" style="font-size:13px;">
+            {{ key.replace('_', ' ').title() }}
+          </span>
+          <span style="font-size:14px;">
+            {{ value or '—' }}
+          </span>
+        </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2 mt-4">
+          <a href="/applications/{{ application.id }}/preview-pdf"
+             target="_blank"
+             class="btn"
+             style="background:var(--primary);color:#fff;">
+            <i class="bi bi-file-pdf me-1"></i>
+            Download PDF
+          </a>
+          <a href="/applications"
+             class="btn btn-outline-secondary">
+            ← Back
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

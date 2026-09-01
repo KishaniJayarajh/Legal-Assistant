@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+{% block content %}
+<div class="card-custom">
+  <div class="card-header">👥 All Users ({{ users|length }})</div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead style="background:#f8fafc;">
+        <tr><th class="ps-3">Name</th><th>Email</th><th>Mobile</th><th>Language</th><th>Role</th><th class="pe-3">Joined</th></tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="ps-3">{{ u.fullname }}</td>
+          <td style="font-size:13px;">{{ u.email }}</td>
+          <td style="font-size:13px;">{{ u.mobile or '—' }}</td>
+          <td><span class="badge bg-secondary">{{ u.preferred_language }}</span></td>
+          <td>
+            {% if u.role=='admin' %}<span class="badge" style="background:#7c3aed;">Admin</span>
+            {% else %}<span class="badge bg-secondary">User</span>{% endif %}
+          </td>
+          <td class="pe-3" style="font-size:12px;">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

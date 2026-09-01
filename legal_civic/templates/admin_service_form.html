@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if service else 'Add' }} Service{% endblock %}
+{% block page_title %}{{ 'Edit' if service else 'Add New' }} Service{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card-custom">
+      <div class="card-header">{{ '✏️ Edit Service' if service else '➕ Add New Service' }}</div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Service Name</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Passport Application"
+                   value="{{ service.name if service else '' }}" required/>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label">Category</label>
+              <input type="text" name="category" class="form-control" placeholder="e.g. Immigration"
+                     value="{{ service.category if service else '' }}"/>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Icon (emoji)</label>
+              <input type="text" name="icon" class="form-control" placeholder="🛂"
+                     value="{{ service.icon if service else '📄' }}"/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3" placeholder="Brief description of the service">{{ service.description if service else '' }}</textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Official Government Link</label>
+            <input type="url" name="official_link" class="form-control" placeholder="https://www.immigration.gov.lk"
+                   value="{{ service.official_link if service else '' }}"/>
+          </div>
+          {% if service %}
+          <div class="mb-4">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+              <option value="Active" {% if service.status=='Active' %}selected{% endif %}>Active</option>
+              <option value="Inactive" {% if service.status=='Inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+          {% endif %}
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn" style="background:var(--primary);color:#fff;">
+              {{ 'Save Changes' if service else 'Add Service' }}
+            </button>
+            <a href="{{ url_for('admin.manage_services') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

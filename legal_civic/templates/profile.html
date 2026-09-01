@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card-custom">
+      <div class="card-header">👤 Profile Settings</div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="fullname" class="form-control" value="{{ current_user.fullname }}"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email (cannot change)</label>
+            <input type="email" class="form-control" value="{{ current_user.email }}" disabled/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Mobile Number</label>
+            <input type="text" name="mobile" class="form-control" value="{{ current_user.mobile or '' }}"/>
+          </div>
+          <div class="mb-4">
+            <label class="form-label">Preferred Language</label>
+            <select name="preferred_language" class="form-select">
+              <option value="English" {% if current_user.preferred_language=='English' %}selected{% endif %}>English</option>
+              <option value="Tamil" {% if current_user.preferred_language=='Tamil' %}selected{% endif %}>தமிழ் (Tamil)</option>
+              <option value="Sinhala" {% if current_user.preferred_language=='Sinhala' %}selected{% endif %}>සිංහල (Sinhala)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn" style="background:var(--primary);color:#fff;">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('admin.manage_users') }}"
+       class="stat-card d-block text-decoration-none admin-stat-link">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-num text-primary">{{ total_users }}</div>
+          <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-icon bg-primary-soft">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('admin.manage_services') }}"
+       class="stat-card d-block text-decoration-none admin-stat-link">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <d iv class="stat-num text-success">{{ total_services }}</d>
+          <div class="stat-label">Services</div>
+        </div>
+        <div class="stat-icon bg-success-soft">
+          <i class="bi bi-bank2"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('admin.manage_chats') }}"
+       class="stat-card d-block text-decoration-none admin-stat-link">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="stat-num text-info">{{ total_chats }}</div>
+          <div class="stat-label">AI Chats</div>
+        </div>
+        <div class="stat-icon bg-info-soft">
+          <i class="bi bi-chat-dots-fill"></i>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="col-6 col-md-3">
+  <a href="{{ url_for('admin.manage_documents') }}"
+     class="stat-card d-block text-decoration-none admin-stat-link">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <div class="stat-num text-warning">{{ total_docs }}</div>
+        <div class="stat-label">Applications</div>
+      </div>
+      <div class="stat-icon bg-warning-soft">
+        <i class="bi bi-file-earmark-text"></i>
+      </div>
+    </div>
+  </a>
+</div>
+{% endblock %}
